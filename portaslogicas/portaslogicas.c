@@ -14,6 +14,8 @@
 #define LEDG 11
 #define LEDB 12
 
+unsigned int saida[4] = {0,0,0,0};
+
 void inicializacao(){
     stdio_init_all(); // Inicializa os tipos stdio padrão presentes ligados ao binário
     // Inicialização do i2c
@@ -64,173 +66,98 @@ void led_false() {
     gpio_put(LEDB, false);
 }
 
-void AND(unsigned int adc_x){
-    do{
-        if(gpio_get(ButtonA)==0 && gpio_get(ButtonB)==0){ // condicional dos dois apertados
-            led_true();
-        }
-        else if(gpio_get(ButtonA)==0){ //apenas A apertado
-            led_false();
-        }
-        else if(gpio_get(ButtonB)==0){ //apenas B apertado
-            led_false();
-        }
-        else{ //ambos soltos
-            led_false();
-        }
-        adc_select_input(1);
-        adc_x = adc_read();
-    }while(adc_x > 50 && adc_x < 4050);
-}
-
-void OR(unsigned int adc_x){
-    do{
-        if(gpio_get(ButtonA)==0 && gpio_get(ButtonB)==0){ // condicional dos dois apertados
-            led_true();
-        }
-        else if(gpio_get(ButtonA)==0){ //apenas A apertado
-            led_true();
-        }
-        else if(gpio_get(ButtonB)==0){ //apenas B apertado
-            led_true();
-        }
-        else{ //ambos soltos
-            led_false();
-        }
-        adc_select_input(1);
-        adc_x = adc_read();
-    }while(adc_x > 50 && adc_x < 4050);
-}
-
-void NOT(unsigned int adc_x){
-    do{
-        if(gpio_get(ButtonA)==0){ // condicional dos dois apertados
-            led_false();
-        }
-        else{ //ambos soltos
-            led_true();
-        }
-        adc_select_input(1);
-        adc_x = adc_read();
-    }while(adc_x > 50 && adc_x < 4050);
-}
-
-void NAND(unsigned int adc_x){
-    do{
-        if(gpio_get(ButtonA)==0 && gpio_get(ButtonB)==0){ // condicional dos dois apertados
-            led_false();
-        }
-        else if(gpio_get(ButtonA)==0){ //apenas A apertado
-            led_true();
-        }
-        else if(gpio_get(ButtonB)==0){ //apenas B apertado
-            led_true();
-        }
-        else{ //ambos soltos
-            led_true();
-        }
-        adc_select_input(1);
-        adc_x = adc_read();
-    }while(adc_x > 50 && adc_x < 4050);
-}
-
-void NOR(unsigned int adc_x){
-    do{
-        if(gpio_get(ButtonA)==0 && gpio_get(ButtonB)==0){ // condicional dos dois apertados
-            led_false();
-        }
-        else if(gpio_get(ButtonA)==0){ //apenas A apertado
-            led_false();
-        }
-        else if(gpio_get(ButtonB)==0){ //apenas B apertado
-            led_false();
-        }
-        else{ //ambos soltos
-            led_true();
-        }
-        adc_select_input(1);
-        adc_x = adc_read();
-    }while(adc_x > 50 && adc_x < 4050);
-}
-
-void XOR(unsigned int adc_x){
-    do{
-        if(gpio_get(ButtonA)==0 && gpio_get(ButtonB)==0){ // condicional dos dois apertados
-            led_false();
-        }
-        else if(gpio_get(ButtonA)==0){ //apenas A apertado
-            led_true();
-        }
-        else if(gpio_get(ButtonB)==0){ //apenas B apertado
-            led_true();
-        }
-        else{ //ambos soltos
-            led_false();
-        }
-        adc_select_input(1);
-        adc_x = adc_read();
-    }while(adc_x > 50 && adc_x < 4050);
-}
-
-void XNOR(unsigned int adc_x){
-    do{
-        if(gpio_get(ButtonA)==0 && gpio_get(ButtonB)==0){ // condicional dos dois apertados
-            led_true();
-        }
-        else if(gpio_get(ButtonA)==0){ //apenas A apertado
-            led_false();
-        }
-        else if(gpio_get(ButtonB)==0){ //apenas B apertado
-            led_false();
-        }
-        else{ //ambos soltos
-            led_true();
-        }
-        adc_select_input(1);
-        adc_x = adc_read();
-    }while(adc_x > 50 && adc_x < 4050);
-}
-
 int main(){
 
-    unsigned int adc_x = 0, pos_atual = 0;
+    unsigned int adc_x = 0, pos_atual = 0, flag=0;
     inicializacao();
 
     while (true){
         printf("pos atual = %d\n", pos_atual);
         switch(pos_atual){
-            case 0: 
-                AND(adc_x);
+            case 0: //AND
+                saida[0]=0;
+                saida[1]=0;
+                saida[2]=0;
+                saida[3]=1;
                 //func menu
                 break;
-            case 1:
-                OR(adc_x);
+            case 1: //OR
+                saida[0]=0;
+                saida[1]=1;
+                saida[2]=1;
+                saida[3]=1;
                 //func menu
                 break;
-            case 2:
-                NOT(adc_x);
+            case 2: //NOT
+                saida[1]=0;
+                saida[0]=1;
                 //func menu
                 break;
-            case 3:
-                NAND(adc_x);
+            case 3: //NAND
+                saida[0]=1;
+                saida[1]=1;
+                saida[2]=1;
+                saida[3]=0;
                 //func menu
                 break;
-            case 4:
-                NOR(adc_x);
+            case 4: //NOR
+                saida[0]=1;
+                saida[1]=0;
+                saida[2]=0;
+                saida[3]=0;
                 //func menu
                 break;
             case 5:
-                XOR(adc_x);
+                saida[0]=0;
+                saida[1]=1;
+                saida[2]=1;
+                saida[3]=0;
                 //func menu
                 break;
             case 6:
-                XNOR(adc_x);
+                saida[0]=1;
+                saida[1]=0;
+                saida[2]=0;
+                saida[3]=1;
                 //func menu
                 break;
         }
 
         // do-while que coleta informação do ADC do eixo x do joystick
         do{
+            if(gpio_get(ButtonA)==0 && gpio_get(ButtonB)==0){ // condicional dos dois apertados
+                if(saida[3]==1){
+                    led_true();
+                }
+                else{
+                    led_false();
+                }
+            }
+            else if(gpio_get(ButtonB)==0){ //apenas B apertado
+                if(saida[2]==1){
+                    led_true();
+                }
+                else{
+                    led_false();
+                }
+            }
+            else if(gpio_get(ButtonA)==0){ //apenas A apertado
+                if(saida[1]==1){
+                    led_true();
+                }
+                else{
+                    led_false();
+                }
+            }
+            else{ //ambos soltos
+                if(saida[0]==1){
+                    led_true();
+                }
+                else{
+                    led_false();
+                }
+            }
+
             adc_select_input(1);
             adc_x = adc_read();
             if (adc_x < 50){
