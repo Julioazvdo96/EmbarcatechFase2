@@ -66,6 +66,58 @@ void led_false() {
     gpio_put(LEDB, false);
 }
 
+void seletor(unsigned int pos_atual){
+    switch(pos_atual){
+        case 0: //AND
+            saida[0]=0;
+            saida[1]=0;
+            saida[2]=0;
+            saida[3]=1;
+            //func menu
+            break;
+        case 1: //OR
+            saida[0]=0;
+            saida[1]=1;
+            saida[2]=1;
+            saida[3]=1;
+            //func menu
+            break;
+        case 2: //NOT
+            saida[1]=0;
+            saida[0]=1;
+            //func menu
+            break;
+        case 3: //NAND
+            saida[0]=1;
+            saida[1]=1;
+            saida[2]=1;
+            saida[3]=0;
+            //func menu
+            break;
+        case 4: //NOR
+            saida[0]=1;
+            saida[1]=0;
+            saida[2]=0;
+            saida[3]=0;
+            //func menu
+            break;
+        case 5:
+            saida[0]=0;
+            saida[1]=1;
+            saida[2]=1;
+            saida[3]=0;
+            //func menu
+            break;
+        case 6:
+            saida[0]=1;
+            saida[1]=0;
+            saida[2]=0;
+            saida[3]=1;
+            //func menu
+            break;
+    }
+}
+
 int main(){
 
     unsigned int adc_x = 0, pos_atual = 0, flag=0;
@@ -73,55 +125,7 @@ int main(){
 
     while (true){
         printf("pos atual = %d\n", pos_atual);
-        switch(pos_atual){
-            case 0: //AND
-                saida[0]=0;
-                saida[1]=0;
-                saida[2]=0;
-                saida[3]=1;
-                //func menu
-                break;
-            case 1: //OR
-                saida[0]=0;
-                saida[1]=1;
-                saida[2]=1;
-                saida[3]=1;
-                //func menu
-                break;
-            case 2: //NOT
-                saida[1]=0;
-                saida[0]=1;
-                //func menu
-                break;
-            case 3: //NAND
-                saida[0]=1;
-                saida[1]=1;
-                saida[2]=1;
-                saida[3]=0;
-                //func menu
-                break;
-            case 4: //NOR
-                saida[0]=1;
-                saida[1]=0;
-                saida[2]=0;
-                saida[3]=0;
-                //func menu
-                break;
-            case 5:
-                saida[0]=0;
-                saida[1]=1;
-                saida[2]=1;
-                saida[3]=0;
-                //func menu
-                break;
-            case 6:
-                saida[0]=1;
-                saida[1]=0;
-                saida[2]=0;
-                saida[3]=1;
-                //func menu
-                break;
-        }
+        seletor(pos_atual);
 
         // do-while que coleta informação do ADC do eixo x do joystick
         do{
