@@ -2,7 +2,10 @@
 #include "pico/stdlib.h"
 #include "hardware/adc.h"
 #include "hardware/i2c.h"
+#include "func/oled.h"
 #include "inc/ssd1306.h"
+#include <string.h>
+#include <ctype.h>
 
 // valores dos pinos utilizados
 #define EixoX 27
@@ -66,54 +69,54 @@ void led_false() {
     gpio_put(LEDB, false);
 }
 
-void seletor(unsigned int pos_atual){
+void seletor(unsigned int pos_atual, struct render_area frame_area){
     switch(pos_atual){
         case 0: //AND
             saida[0]=0;
             saida[1]=0;
             saida[2]=0;
             saida[3]=1;
-            //func menu
+            OLED_AND(frame_area);
             break;
         case 1: //OR
             saida[0]=0;
             saida[1]=1;
             saida[2]=1;
             saida[3]=1;
-            //func menu
+            OLED_OR(frame_area);
             break;
         case 2: //NOT
             saida[1]=0;
             saida[0]=1;
-            //func menu
+            OLED_NOT(frame_area);
             break;
         case 3: //NAND
             saida[0]=1;
             saida[1]=1;
             saida[2]=1;
             saida[3]=0;
-            //func menu
+            OLED_NAND(frame_area);
             break;
         case 4: //NOR
             saida[0]=1;
             saida[1]=0;
             saida[2]=0;
             saida[3]=0;
-            //func menu
+            OLED_NOR(frame_area);
             break;
         case 5:
             saida[0]=0;
             saida[1]=1;
             saida[2]=1;
             saida[3]=0;
-            //func menu
+            OLED_XOR(frame_area);
             break;
         case 6:
             saida[0]=1;
             saida[1]=0;
             saida[2]=0;
             saida[3]=1;
-            //func menu
+            OLED_XNOR(frame_area);
             break;
     }
 }
@@ -123,11 +126,20 @@ int main(){
     unsigned int adc_x = 0, pos_atual = 0, flag=0;
     inicializacao();
 
-    while (true){
-        printf("pos atual = %d\n", pos_atual);
-        seletor(pos_atual);
+    struct render_area frame_area = {
+        start_column : 0,
+        end_column : ssd1306_width - 1,
+        start_page : 0,
+        end_page : ssd1306_n_pages - 1
+    };
 
-        // do-while que coleta informação do ADC do eixo x do joystick
+    calculate_render_area_buffer_length(&frame_area);
+
+	//Zerando o display para garantir que nada esteja sendo exibido na tela OLED
+    zeraDisplay(frame_area);
+
+    while (true){
+        seletor(pos_atual, frame_area);
         do{
             if(gpio_get(ButtonA)==0 && gpio_get(ButtonB)==0){ // condicional dos dois apertados
                 if(saida[3]==1){
