@@ -84,8 +84,10 @@ void seletor(unsigned int pos_atual, struct render_area frame_area){
             OLED_OR(frame_area);
             break;
         case 2: //NOT
-            saida[1]=0;
             saida[0]=1;
+            saida[1]=1;
+            saida[2]=0;
+            saida[3]=0;
             OLED_NOT(frame_area);
             break;
         case 3: //NAND
