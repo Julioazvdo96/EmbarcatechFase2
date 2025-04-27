@@ -3,9 +3,7 @@
 #include "hardware/adc.h"
 #include "hardware/i2c.h"
 #include "func/oled.h"
-#include "inc/ssd1306.h"
-#include <string.h>
-#include <ctype.h>
+
 
 // valores dos pinos utilizados
 #define EixoX 27
@@ -142,15 +140,7 @@ int main(){
         seletor(pos_atual, frame_area);
         do{
             if(gpio_get(ButtonA)==0 && gpio_get(ButtonB)==0){ // condicional dos dois apertados
-                if(saida[3]==1){
-                    led_true();
-                }
-                else{
-                    led_false();
-                }
-            }
-            else if(gpio_get(ButtonB)==0){ //apenas B apertado
-                if(saida[2]==1){
+                if(saida[0]==1){
                     led_true();
                 }
                 else{
@@ -165,8 +155,16 @@ int main(){
                     led_false();
                 }
             }
+            else if(gpio_get(ButtonB)==0){ //apenas B apertado
+                if(saida[2]==1){
+                    led_true();
+                }
+                else{
+                    led_false();
+                }
+            }
             else{ //ambos soltos
-                if(saida[0]==1){
+                if(saida[3]==1){
                     led_true();
                 }
                 else{
