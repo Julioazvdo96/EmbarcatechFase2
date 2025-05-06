@@ -17,44 +17,6 @@
 
 unsigned int saida[4] = {0,0,0,0};
 
-void inicializacao(){
-    stdio_init_all(); // Inicializa os tipos stdio padrão presentes ligados ao binário
-    // Inicialização do i2c
-    i2c_init(i2c1, ssd1306_i2c_clock * 1000);
-    gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
-    gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);
-    gpio_pull_up(I2C_SDA);
-    gpio_pull_up(I2C_SCL);
-
-    // Processo de inicialização completo do OLED SSD1306
-    ssd1306_init();
-
-    // Inicialização do botão do joystick
-    gpio_init(ButtonA);
-    gpio_set_dir(ButtonA, GPIO_IN);
-    gpio_pull_up(ButtonA);
-    gpio_init(ButtonB);
-    gpio_set_dir(ButtonB, GPIO_IN);
-    gpio_pull_up(ButtonB);
-
-    // Inicialização do ADC
-    adc_init();
-    adc_gpio_init(EixoX);
-
-    // Inicialização dos LEDs
-    gpio_init(LEDR);
-    gpio_init(LEDG);
-    gpio_init(LEDB);
-
-    gpio_set_slew_rate(LEDR, GPIO_SLEW_RATE_SLOW);
-    gpio_set_slew_rate(LEDG, GPIO_SLEW_RATE_SLOW);
-    gpio_set_slew_rate(LEDB, GPIO_SLEW_RATE_SLOW);
-
-    gpio_set_dir(LEDR, GPIO_OUT);
-    gpio_set_dir(LEDG, GPIO_OUT);
-    gpio_set_dir(LEDB, GPIO_OUT);
-}
-
 void led_true() {
     gpio_put(LEDR, false);
     gpio_put(LEDG, true);
