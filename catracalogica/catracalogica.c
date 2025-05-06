@@ -84,14 +84,12 @@ struct pixel_t {
    * Escreve os dados do buffer nos LEDs.
    */
    void npWrite() {
-    printf("ENTROU NP WRITE");
     // Escreve cada dado de 8-bits dos pixels em sequência no buffer da máquina PIO.
     for (uint i = 0; i < MATRIX_COUNT; ++i) {
       pio_sm_put_blocking(np_pio, sm, leds[i].G);
       pio_sm_put_blocking(np_pio, sm, leds[i].R);
       pio_sm_put_blocking(np_pio, sm, leds[i].B);
     }
-    printf("SAIU NPWRITE");
    }
 
 void inicializacao(){
@@ -131,11 +129,9 @@ void inicializacao(){
 int main(){
     uint adc_x, adc_y, pos_atual=0;
     inicializacao();
-    sleep_ms(10000);
 
     while (true) {
         for(int i=0;i<4;i++){
-            printf("entrou for npsetled");
             if(matrix[i]==0){
                 npSetLED(i, 10, 0, 0);
             }
@@ -143,18 +139,15 @@ int main(){
                 npSetLED(i, 0, 10, 0);
             }
         }
-        printf("saiu for npsetled");
-        sleep_ms(3000);
 
         npWrite();
 
         do{
-            printf("entrou do while");
             adc_select_input(1);
             adc_x = adc_read();
             adc_select_input(0);
             adc_y = adc_read();
-            if (adc_y > 4050){
+            if (adc_y <50){
                 if (pos_atual != 0){ // inserir menor valor possível
                     pos_atual--;
                 }
@@ -162,7 +155,7 @@ int main(){
                     pos_atual=3;
                 }
             }
-            else if (adc_y > 50){
+            else if (adc_y > 4050){
                 if (pos_atual != 3){ // inserir maior valor possível
                     pos_atual++;
                 }
@@ -176,11 +169,10 @@ int main(){
             else if (adc_x > 4050){
                 matrix[pos_atual]=1;
             }
-            sleep_ms(100);
+            sleep_ms(300);
             // Condicionais para a saída do do-while de navegação
             printf("matrix[%d]=%d\n", pos_atual,matrix[pos_atual]);
             printf("adc_x = %d adc_y = %d\n", adc_x, adc_y);
-            sleep_ms(1000);
         } while (adc_x > 50 && adc_x < 4050);
     }
 }
