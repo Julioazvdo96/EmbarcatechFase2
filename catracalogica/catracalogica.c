@@ -126,6 +126,19 @@ void inicializacao(){
     npClear();
 }
 
+void led_true() {
+    gpio_put(LEDR, false);
+    gpio_put(LEDG, true);
+    gpio_put(LEDB, false);
+}
+
+void led_false() {
+    gpio_put(LEDR, true);
+    gpio_put(LEDG, false);
+    gpio_put(LEDB, false);
+}
+
+
 int main(){
     uint adc_x, adc_y, pos_atual=0;
     inicializacao();
@@ -141,6 +154,13 @@ int main(){
         }
 
         npWrite();
+
+        if(matrix[3]==0 || (matrix[0]==1 && matrix[1]==1 && matrix[2]==1)){
+            led_true();
+        }
+        else{
+            led_false();
+        }
 
         do{
             adc_select_input(1);
