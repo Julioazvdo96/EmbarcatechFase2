@@ -58,7 +58,7 @@ int main(){
             adc_x = adc_read();
             adc_select_input(0);
             adc_y = adc_read();
-            if (adc_y > 4050){
+            if (adc_y <50){
                 if (pos_atual != 0){ // inserir menor valor possível
                     pos_atual--;
                 }
@@ -82,7 +82,8 @@ int main(){
             }
             sleep_ms(100);
             // Condicionais para a saída do do-while de navegação
-            printf("matrix[%d]=%d", pos_atual,matrix[pos_atual]);
+            printf("adc_x = %d adc_y = %d\n", adc_x,adc_y);
+            printf("matrix[%d]=%d\n", pos_atual,matrix[pos_atual]);
             sleep_ms(1000);
         } while (adc_x > 50 && adc_x < 4050);
     }
