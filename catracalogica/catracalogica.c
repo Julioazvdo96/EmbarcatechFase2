@@ -5,9 +5,10 @@
 #include "pico/stdlib.h"
 #include "inc/ssd1306.h"
 #include "inc/ws2812b.pio.h"
+#include <string.h>
 
-#define EixoX 27
 #define EixoY 26
+#define SW_JOY 22
 
 #define LEDR 13
 #define LEDG 11
@@ -19,8 +20,45 @@
 #define MATRIX_PIN 7
 #define MATRIX_COUNT 25 
 
-
 uint matrix[4] = {0,0,0,0}; 
+
+
+// Função para atualizar o display OLED
+void atualizarDisplay(uint8_t *ssd, struct render_area *areaRender, uint pos_atual) {
+    memset(ssd, 0, ssd1306_buffer_length);
+    
+    // char tituloPorta[32], textoEntrada[32], textoSaida[32];
+    char textoEntrada[32], apresentacaoEntrada[32];
+    // snprintf(tituloPorta, sizeof(tituloPorta), "Cima e baixo altera variável");
+    
+    if (pos_atual==0) {
+        snprintf(apresentacaoEntrada, sizeof(apresentacaoEntrada), "Porteiro");
+        snprintf(textoEntrada, sizeof(textoEntrada), "PT:\n  %d", matrix[0]);
+    } 
+    else if (pos_atual==1) {
+        snprintf(apresentacaoEntrada, sizeof(apresentacaoEntrada), "Dia Valido");
+        snprintf(textoEntrada, sizeof(textoEntrada), "DI:\n  %d", matrix[1]);
+    } 
+    else if (pos_atual==2){
+        snprintf(apresentacaoEntrada, sizeof(apresentacaoEntrada), "Hora Valida");
+        snprintf(textoEntrada, sizeof(textoEntrada), "HO:\n  %d", matrix[2]);
+    }
+    else{
+        snprintf(apresentacaoEntrada, sizeof(apresentacaoEntrada), "Autenticacao ok");
+        snprintf(textoEntrada, sizeof(textoEntrada), "GR:\n  %d", matrix[3]);
+    }
+
+    
+    ssd1306_draw_string(ssd, 5, 25, apresentacaoEntrada);
+    ssd1306_draw_string(ssd, 40, 45, textoEntrada);
+    render_on_display(ssd, areaRender);
+}
+
+void zeraDisplay(struct render_area frame_area){
+	uint8_t ssd[ssd1306_buffer_length];
+    memset(ssd, 0, ssd1306_buffer_length);
+    render_on_display(ssd, &frame_area);
+}
 
 // Definição de pixel GRB
 struct pixel_t {
@@ -29,7 +67,7 @@ struct pixel_t {
    typedef struct pixel_t pixel_t;
    typedef pixel_t npLED_t; // Mudança de nome de "struct pixel_t" para "npLED_t" por clareza.
    
-   // Declaração do buffer de pixels que formam a matriz.
+   // Declaração do buffer de pixels que formam a matrix.
    npLED_t leds[MATRIX_COUNT];
    
    // Variáveis para uso da máquina PIO.
@@ -37,7 +75,7 @@ struct pixel_t {
    uint sm;
    
    /**
-   * Inicializa a máquina PIO para controle da matriz de LEDs.
+   * Inicializa a máquina PIO para controle da matrix de LEDs.
    */
    void npInit(uint pin) {
    
@@ -106,13 +144,13 @@ void inicializacao(){
 
     // Inicialização do ADC
     adc_init();
-    adc_gpio_init(EixoX);
     adc_gpio_init(EixoY);
 
     // Inicialização dos LEDs
     gpio_init(LEDR);
     gpio_init(LEDG);
     gpio_init(LEDB);
+    gpio_init(SW_JOY);
 
     gpio_set_slew_rate(LEDR, GPIO_SLEW_RATE_SLOW);
     gpio_set_slew_rate(LEDG, GPIO_SLEW_RATE_SLOW);
@@ -121,6 +159,9 @@ void inicializacao(){
     gpio_set_dir(LEDR, GPIO_OUT);
     gpio_set_dir(LEDG, GPIO_OUT);
     gpio_set_dir(LEDB, GPIO_OUT);
+    gpio_set_dir(SW_JOY, GPIO_IN); 
+    
+    gpio_pull_up(SW_JOY);
 
     npInit(MATRIX_PIN);
     npClear();
@@ -140,22 +181,37 @@ void led_false() {
 
 
 int main(){
-    uint adc_x, adc_y, pos_atual=0;
+    uint adc_y, pos_atual=0, flag_do=0,plus_one=0;
     inicializacao();
+
+    struct render_area frame_area = {
+        start_column : 0,
+        end_column : ssd1306_width - 1,
+        start_page : 0,
+        end_page : ssd1306_n_pages - 1
+    };
+
+    calculate_render_area_buffer_length(&frame_area);
+    uint8_t ssd[ssd1306_buffer_length];
+
+	//Zerando o display para garantir que nada esteja sendo exibido na tela OLED
+    zeraDisplay(frame_area);
 
     while (true) {
         for(int i=0;i<4;i++){
+            plus_one=i+1;
             if(matrix[i]==0){
-                npSetLED(i, 10, 0, 0);
+                npSetLED(plus_one, 10, 0, 0);
             }
             else{
-                npSetLED(i, 0, 10, 0);
+                npSetLED(plus_one, 0, 10, 0);
             }
+            plus_one=0;
         }
 
         npWrite();
 
-        if(matrix[3]==0 || (matrix[0]==1 && matrix[1]==1 && matrix[2]==1)){
+        if(matrix[0]==0 || (matrix[1]==1 && matrix[2]==1 && matrix[3]==1)){
             led_true();
         }
         else{
@@ -163,8 +219,6 @@ int main(){
         }
 
         do{
-            adc_select_input(1);
-            adc_x = adc_read();
             adc_select_input(0);
             adc_y = adc_read();
             if (adc_y <50){
@@ -183,16 +237,22 @@ int main(){
                     pos_atual=0;
                 }
             }
-            else if (adc_x < 50){
-                matrix[pos_atual]=0;
+            else if (gpio_get(SW_JOY)==0){
+                sleep_ms(100);
+                if(matrix[pos_atual]==0){
+                    matrix[pos_atual]=1;
+                }
+                else{
+                    matrix[pos_atual]=0;
+                }
+                flag_do=1;
             }
-            else if (adc_x > 4050){
-                matrix[pos_atual]=1;
-            }
-            sleep_ms(300);
+            
+            sleep_ms(100);
             // Condicionais para a saída do do-while de navegação
-            printf("matrix[%d]=%d\n", pos_atual,matrix[pos_atual]);
-            printf("adc_x = %d adc_y = %d\n", adc_x, adc_y);
-        } while (adc_x > 50 && adc_x < 4050);
+
+            atualizarDisplay(ssd, &frame_area, pos_atual);
+        } while (flag_do!=1);
+        flag_do=0;
     }
 }
