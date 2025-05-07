@@ -27,9 +27,7 @@ uint matrix[4] = {0,0,0,0};
 void atualizarDisplay(uint8_t *ssd, struct render_area *areaRender, uint pos_atual) {
     memset(ssd, 0, ssd1306_buffer_length);
     
-    // char tituloPorta[32], textoEntrada[32], textoSaida[32];
     char textoEntrada[32], apresentacaoEntrada[32];
-    // snprintf(tituloPorta, sizeof(tituloPorta), "Cima e baixo altera variável");
     
     if (pos_atual==0) {
         snprintf(apresentacaoEntrada, sizeof(apresentacaoEntrada), "Porteiro");
@@ -166,7 +164,7 @@ void inicializacao(){
     npInit(MATRIX_PIN);
     npClear();
 }
-
+//funções de manipulação do LED RGB
 void led_true() {
     gpio_put(LEDR, false);
     gpio_put(LEDG, true);
@@ -198,6 +196,7 @@ int main(){
     zeraDisplay(frame_area);
 
     while (true) {
+        //Lógica de seleção e impressão das cores na matriz de LED
         for(int i=0;i<4;i++){
             plus_one=i+1;
             if(matrix[i]==0){
@@ -211,13 +210,14 @@ int main(){
 
         npWrite();
 
+        //Lógica de seleção do LED RGB que representará a saída CT 
         if(matrix[0]==0 || (matrix[1]==1 && matrix[2]==1 && matrix[3]==1)){
             led_true();
         }
         else{
             led_false();
         }
-
+        //Lógica de navegação e escolha de valores utilizando o joystick e o seu botão
         do{
             adc_select_input(0);
             adc_y = adc_read();
